@@ -11,6 +11,6 @@ A minimal, no-frills decentralized exchange for **Ethereum**, powered by a TypeS
 **Right now, it's Ethereum-only.** I'm focusing on making the core swap mechanics rock-solid before expanding elsewhere.
 
 **Built with:**
-- **Frontend:** TypeScript (Something like React or Vue? Maybe Svelte? *You can specify here*)
+- **Frontend:** TypeScript
 - **Backend/Chain Stuff:** Go, Solidity smart contracts
 - **Blockchain:** Ethereum
