@@ -14,9 +14,17 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]  # Changed /health to /api/health
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - app-network
+    restart: unless-stopped
 
   nginx:
     build:
@@ -25,9 +33,10 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./frontend/dist:/usr/share/nginx/html  # Mount frontend build
+      - ./frontend/dist:/usr/share/nginx/html:ro
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy  # Wait for backend to be healthy
     networks:
       - app-network
 
@@ -50,12 +59,16 @@ services:
     networks:
       - app-network
 
-  pghero:
-    image: ankane/pghero:latest
+  pgadmin:
+    image: dpage/pgadmin4:8.5  # Latest stable version as of 2025
     environment:
-      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      - PGADMIN_DEFAULT_EMAIL=admin@zap.local  # Login email
+      - PGADMIN_DEFAULT_PASSWORD=admin  # Login password (change in production)
+      - PGADMIN_CONFIG_SERVER_MODE=False  # Single-user mode for simplicity
     ports:
-      - "3000:3000"
+      - "5050:80"  # Access at http://localhost:5050
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin  # Persist pgAdmin config
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,3 +81,4 @@ networks:
 
 volumes:
   postgres-data:
+  pgadmin-data:
